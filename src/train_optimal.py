@@ -21,16 +21,18 @@ def train_optimal(args, train_data):
     )
 
     model = MLP(args)
-    model.train()
 
     optimizer = torch.optim.Adam(
         model.parameters(),
         lr=args.lr,
-        weight_decay=0.01
+        weight_decay=0
     )
 
     if args.load_from_disk == True:
         model.load_state_dict(torch.load(os.path.join(args.model_path, "model_state.pth")))
+        
+    model.to(device)
+    model.train()
 
     loss_list = []
     for i in range(args.epoch):
@@ -53,7 +55,7 @@ def train_optimal(args, train_data):
             loss.backward()
             optimizer.step()
         epoch_loss = losses / count
-        print(epoch_loss)
+        print(i, epoch_loss)
         loss_list.append(epoch_loss.detach().cpu().numpy())
 
 
