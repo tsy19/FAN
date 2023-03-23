@@ -34,6 +34,7 @@ class MLP(nn.Module):
         self.fc3 = nn.Linear(hidden_dim, 2)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.5)
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         x = self.fc1(x)
@@ -43,4 +44,5 @@ class MLP(nn.Module):
         x = self.relu(x)
         x = self.dropout(x)
         x = self.fc3(x)
+        x = self.softmax(x)
         return x

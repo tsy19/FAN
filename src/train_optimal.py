@@ -11,7 +11,11 @@ from options import args_parser
 
 def train_optimal(args, train_data):
 
-    device = args.device
+    if "cuda" in args.device:
+        device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
+    else:
+        device = torch.device("cpu")
+
     criterion = nn.CrossEntropyLoss().to(device)
 
     trainloader = DataLoader(
@@ -29,7 +33,9 @@ def train_optimal(args, train_data):
     )
 
     if args.load_from_disk == True:
-        model.load_state_dict(torch.load(os.path.join(args.model_path, "model_state.pth")))
+        checkpoint = torch.load(os.path.join(args.model_path, "model_state.pth"), map_location=device)
+        print(checkpoint.keys())
+        model.load_state_dict(checkpoint)
         
     model.to(device)
     model.train()
