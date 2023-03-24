@@ -14,9 +14,19 @@ class AdultDataset(Dataset):
     def __getitem__(self, index):
         return self.X[index], self.y[index]
 
-def load_data(args):
+def load_data(args, optimal_labels=None, abstain_labels=None):
     # Load training and testing data as DataLoader
-    train_data = AdultDataset(np.load(os.path.join(args.data_path, 'X_train.npy')), np.load(os.path.join(args.data_path, 'y_train.npy')))
-    test_data = AdultDataset(np.load(os.path.join(args.data_path, 'X_test.npy')), np.load(os.path.join(args.data_path, 'y_test.npy')))
+    if optimal_labels is None:
+        train_data = AdultDataset(np.load(os.path.join(args.data_path, 'X_train.npy')), np.load(os.path.join(args.data_path, 'y_train.npy')))
+        test_data = AdultDataset(np.load(os.path.join(args.data_path, 'X_test.npy')), np.load(os.path.join(args.data_path, 'y_test.npy')))
 
-    return train_data, test_data
+        return train_data, test_data
+    else:
+        X_train = np.load(os.path.join(args.data_path, 'X_train.npy'))
+        print(X_train.shape)
+        X_train = np.column_stack((X_train, optimal_labels))
+        print(X_train.shape)
+        
+        train_data = AdultDataset(X_train, abstain_labels)
+        return train_data, None
+        

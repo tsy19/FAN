@@ -15,7 +15,13 @@ def args_parser():
                        help="")
     parser.add_argument('--lr', type=float, default=0.0005,
                        help="")
-    parser.add_argument('--load_from_disk', type=bool, default=True,
+    parser.add_argument('--load_from_disk', type=bool, default=False,
+                        help="")
+    parser.add_argument('--fairness_notion', type=str, default="DP",
+                        help="")
+    parser.add_argument('--type_of_abstain', type=str, default="prob",
+                        help="clas")
+    parser.add_argument('--attribute', type=str, default="sex",
                         help="")
 
     parser.add_argument('--seed', type=int, default=1, help='random seed')
