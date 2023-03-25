@@ -16,6 +16,10 @@ matplotlib
 
 
 
+
+
+
+
 **Hyperparameter:**
 
 epsilon - fairness disparity
@@ -23,6 +27,10 @@ epsilon - fairness disparity
 delta - group-level abstain rate control
 
 eta - relaxion amount of group error rate
+
+
+
+
 
 
 **To tune hypterparameter for LP, go to src/LP_demographic_parity.ipynb**
