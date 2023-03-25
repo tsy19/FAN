@@ -1,8 +1,8 @@
 # Abstain
 
-Reqiurements:
+**Reqiurements**
 
-**The following packages need to be installed.**
+The following packages need to be installed.
 
 numpy
 
@@ -18,15 +18,13 @@ matplotlib
 
 
 
+**Hyperparameters**
 
+**epsilon** - fairness disparity
 
-**Hyperparameter:**
+**delta** - group-level abstain rate control
 
-epsilon - fairness disparity
-
-delta - group-level abstain rate control
-
-eta - relaxion amount of group error rate
+**eta** - relaxion amount of group error rate
 
 
 
