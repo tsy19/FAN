@@ -54,10 +54,3 @@ pip install -r requirements.txt
 - `eta2`: The error relaxation rate of group 2.
 
 
-
-
-
-
-**To tune hypterparameters for LP, go to src/LP_demographic_parity.ipynb**
-
-**To tune hypterparameters for IP, go to src/IP_demographic_parity.ipynb**
