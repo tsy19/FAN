@@ -1,5 +1,4 @@
 numpy
 torch
-cvxpy
 scipy==1.10
 matplotlib
