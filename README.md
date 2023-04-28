@@ -9,7 +9,7 @@ python main.py --dataset=adult \
      --delta2=0.2 --sigma1=1 --sigma0=1 \
      --sigma=1 --eta1=0 --eta2=0 
 ```
-The output of this code includes a file called "IP_results.npz", contains wn, hn solved by IP, and two folders named "AbstainClassifier" and "hClassifier". These folders contain the trained model states of classifiers used to predict wn and hn, respectively. All the output files will be saved in the directory "ROOT/result/output_folder", where "output_folder" is named using the following information separated by "_":
+The output of this code includes a file called "IP_results.npz", contains wn, hn solved by IP, and two folders named "AbstainClassifier" and "hClassifier". These folders contain the trained model states of classifiers used to predict wn and hn, respectively. All the output files will be saved in the directory "ROOT/result/TwoGroups/output_folder", where "output_folder" is named using the following information separated by "_":
 ```
 args.dataset,
 args.attribute,
