@@ -1,12 +1,11 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from src.models import MLP
 import time
 import numpy as np
 import os
 
-def train_model(train_data, model, args, path=""):
+def train_model(train_data, val_data, model, args, path=""):
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -24,6 +23,11 @@ def train_model(train_data, model, args, path=""):
         batch_size=args.batch_size,
         shuffle=True
     )
+    valloader = DataLoader(
+        val_data,
+        batch_size=args.batch_size,
+        shuffle=True
+    )
 
     model.to(device)
 
@@ -38,8 +42,8 @@ def train_model(train_data, model, args, path=""):
     #     print(checkpoint.keys())
     #     model.load_state_dict(checkpoint)
 
-    model.train()
 
+    best_loss = float('inf')
     loss_list = []
     for i in range(args.max_epoch):
         if i % 50 == 0 and i != 0:
@@ -48,25 +52,41 @@ def train_model(train_data, model, args, path=""):
             with open(os.path.join(path, 'loss.txt'), 'a') as file:
                 for item in loss_list:
                     file.write(str(item) + '\n')
-            if loss_list[-2] - loss_list[-1] <= args.stopping_ratio * loss_list[0]:
-                duration = time.time() - start_time
-                print('Training Time: {}'.format(duration))
-                return
             loss_list = []
-        losses = 0
+        epoch_loss = 0
         count = 0
+        model.train()
         for batch_idx, (features, labels) in enumerate(trainloader):
             features, labels = features.to(device=device, dtype=torch.float), labels.to(device=device, dtype=torch.float)
             model.zero_grad()
             log_probs = model(features).flatten()
             loss = criterion(log_probs, labels)
-            losses += loss * labels.shape[0]
-            count += labels.shape[0]
             loss.backward()
             optimizer.step()
-        epoch_loss = losses / count
+            epoch_loss += loss.item()
+        epoch_loss = epoch_loss / len(trainloader)
         print(i, epoch_loss)
-        loss_list.append(epoch_loss.detach().cpu().numpy())
+        loss_list.append(epoch_loss)
+        val_loss = 0
+        model.eval()
+        for batch_idx, (features, labels) in enumerate(valloader):
+            features, labels = features.to(device=device, dtype=torch.float), labels.to(device=device,
+                                                                                        dtype=torch.float)
+            model.zero_grad()
+            log_probs = model(features).flatten()
+            loss = criterion(log_probs, labels)
+            val_loss += loss.item()
+        val_loss /= len(valloader)
+
+        if val_loss < best_loss:
+            best_loss = val_loss
+            early_stop_counter = 0
+        else:
+            early_stop_counter += 1
+            if early_stop_counter >= args.patience:
+                print('Early stopping after', i, 'epochs')
+                break
+
     duration = time.time() - start_time
     print('Training Time: {}'.format(duration))
     return

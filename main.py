@@ -43,7 +43,7 @@ def load_info(args):
         args.eta1,
         args.eta2,
         args.sample_ratio,
-        args.stopping_ratio,
+        args.patience,
         args.lr,
         args.batch_size,
         args.seed
@@ -87,7 +87,7 @@ if __name__ == '__main__':
         ROOT, "data", args.dataset
     )
 
-    train_data, test_data = load_data(args)
+    train_data, val_data, test_data = load_data(args)
     print("successfully load data.")
 
     #load classifiers dimension
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     if not os.path.isfile(
             os.path.join(args.optimal_classifier_path, "model_state.pth")
     ):
-        train_model(train_data, OptimalNet, args, args.optimal_classifier_path)
+        train_model(train_data, val_data, OptimalNet, args, args.optimal_classifier_path)
     OptimalNet = load_model(OptimalNet, args.optimal_classifier_path)
 
 
@@ -116,11 +116,11 @@ if __name__ == '__main__':
             ), w=wn, h=hn
         )
         # train abstain classifier and h
-        train_data_w, train_data_h = process_data(sampled_data, OptimalNet, wn, hn)
+        train_data_w, train_data_h, val_data_w, val_data_h = process_data(sampled_data, OptimalNet, wn, hn)
         AbstainNet = MLP(args.abstain_classifier_info)
         hNet = MLP(args.h_classifier_info)
-        train_model(train_data_w, AbstainNet, args, args.abstain_classifier_path)
-        train_model(train_data_h, hNet, args, args.h_classifier_path)
+        train_model(train_data_w, val_data_w, AbstainNet, args, args.abstain_classifier_path)
+        train_model(train_data_h, val_data_h, hNet, args, args.h_classifier_path)
 
     duration = time.time() - start_time
     print('Total Time: {}'.format(duration))

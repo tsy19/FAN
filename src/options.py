@@ -5,7 +5,7 @@ def args_parser():
 
     parser.add_argument('--max_epoch', type=int, default=30000,
                         help="Maximum Epochs")
-    parser.add_argument('--stopping_ratio', type=float, default=0.005, help="Early Stopping for Classifiers Training.")
+    parser.add_argument('--patience', type=int, default=5, help="early stopping patience.")
     parser.add_argument('--batch_size', type=int, default=128,
                         help="")
     parser.add_argument('--device', type=str, default="cuda:1",

@@ -15,19 +15,35 @@ class CustomDataset(Dataset):
         return self.X[index], self.y[index]
 
 def load_data(args):
-
-
-    train_data = CustomDataset(np.load(os.path.join(args.data_path, 'X_train.npy')), np.load(os.path.join(args.data_path, 'y_train.npy')))
+    x = np.load(os.path.join(args.data_path, 'X_train.npy'))
+    y = np.load(os.path.join(args.data_path, 'y_train.npy'))
+    n = x.shape[0]
+    truncated = int(0.8 * n)
+    x_train = x[:truncated]
+    y_train = y[:truncated]
+    x_val = x[truncated:]
+    y_val = y[truncated:]
+    train_data = CustomDataset(x_train, y_train)
+    val_data = CustomDataset(x_val, y_val)
     test_data = CustomDataset(np.load(os.path.join(args.data_path, 'X_test.npy')), np.load(os.path.join(args.data_path, 'y_test.npy')))
 
-    return train_data, test_data
+    return train_data, val_data, test_data
 
 def process_data(data, OptimalNet, wn, hn):
     X = np.column_stack(
         (data[0].numpy(),
          ((OptimalNet(data[0]) >= 0.5) * 1).detach().cpu().numpy().flatten()
     ))
-    return CustomDataset(X, wn), CustomDataset(X, hn)
+    n = X.shape[0]
+    truncated = int(0.8 * n)
+    X_train = X[:truncated]
+    wn_train = wn[:truncated]
+    hn_train = hn[:truncated]
+    X_val = X[truncated:]
+    wn_val = wn[truncated:]
+    hn_val = hn[truncated:]
+    return CustomDataset(X_train, wn_train), CustomDataset(X_train, hn_train), \
+           CustomDataset(X_val, wn_val), CustomDataset(X_val, hn_val)
 
 
 def load_model(model, path):
