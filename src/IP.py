@@ -44,6 +44,42 @@ def IP(data, args, OptimalNet):
         #     print("c1", c1.shape)
         cons1 = args.epsilon * np.ones(2)
 
+    elif args.fairness_notion == "EO":
+        temp1 = (y * g1_v)
+        temp2 = (y * g2_v)
+
+        c1 = np.stack([
+            np.hstack([temp1 * np.sum(temp2) - temp2 * np.sum(temp1), np.zeros(2 * n)]),
+            np.hstack([temp2 * np.sum(temp1) - temp1 * np.sum(temp2), np.zeros(2 * n)])])
+        print("c1", c1.shape)
+        cons1 = np.array([args.epsilon * np.sum(y * g1_v) * np.sum(y * g2_v),
+                          args.epsilon * np.sum(y * g1_v) * np.sum(y * g2_v)])
+        print("cons1", cons1.shape)
+
+    elif args.fairness_notion == "EOs":
+        temp1 = (y * g1_v)
+        temp2 = (y * g2_v)
+        temp3 = ((1 - y) * g1_v)
+        temp4 = ((1 - y) * g2_v)
+
+        c1 = np.stack([
+            np.hstack([temp1 * np.sum(temp2) - temp2 * np.sum(temp1), np.zeros(2 * n)]),
+            np.hstack([temp2 * np.sum(temp1) - temp1 * np.sum(temp2), np.zeros(2 * n)]),
+            np.hstack([temp3 * np.sum(temp4) - temp4 * np.sum(temp3), np.zeros(2 * n)]),
+            np.hstack([temp4 * np.sum(temp3) - temp3 * np.sum(temp4), np.zeros(2 * n)])
+        ])
+        print("c1", c1.shape)
+        cons1 = np.array(
+            [
+                args.epsilon * np.sum(y * g1_v) * np.sum(y * g2_v),
+                args.epsilon * np.sum(y * g1_v) * np.sum(y * g2_v),
+                args.epsilon * np.sum((1 - y) * g1_v) * np.sum((1 - y) * g2_v),
+                args.epsilon * np.sum((1 - y) * g1_v) * np.sum((1 - y) * g2_v),
+            ]
+        )
+        print("cons1", cons1.shape)
+
+
     c2 = np.stack(
         [
             np.hstack([zero_vector, g1_v, zero_vector]),
