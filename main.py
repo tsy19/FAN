@@ -31,6 +31,42 @@ def load_info(args):
         if args.attribute == "sex":
             args.group_indices = [65, 64]
 
+    if args.dataset == "compas":
+        input_dim = 7
+        args.optimal_classifier_info = {
+            "dims": [input_dim, 150, 150],
+            "dropout": 0.5
+        }
+        args.abstain_classifier_info = {
+            "dims": [input_dim + 1, 150, 150],
+            "dropout": 0.5
+        }
+        args.h_classifier_info = {
+            "dims": [input_dim + 1, 150, 150],
+            "dropout": 0.5
+        }
+        if args.attribute == "race":
+            args.group_indices = 3
+        elif args.attribute == "sex":
+            args.group_indices = 4
+    if args.dataset == "law":
+        input_dim = 11
+        args.optimal_classifier_info = {
+            "dims": [input_dim, 150, 150],
+            "dropout": 0.5
+        }
+        args.abstain_classifier_info = {
+            "dims": [input_dim + 1, 150, 150],
+            "dropout": 0.5
+        }
+        args.h_classifier_info = {
+            "dims": [input_dim + 1, 150, 150],
+            "dropout": 0.5
+        }
+        if args.attribute == "race":
+            args.group_indices = 9
+
+
     output_names = [
         args.dataset,
         args.attribute,

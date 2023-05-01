@@ -71,7 +71,7 @@ def compute_stats(data, args, wn, hn, star_n=None):
     y = data.y.numpy()
 
     un = wn * hn
-    group_indices = args.group_indices
+    group_indices = args.group_indices if args.dataset == "adult" else [1, 0]
     g_v = []
     stats = {
         "num_of_group": len(group_indices),
@@ -103,8 +103,12 @@ def compute_stats(data, args, wn, hn, star_n=None):
         if idx == 0:
             temp = np.ones(y.shape[0])
         else:
-            item = group_indices[idx - 1]
-            temp = (X[:, item] == 1) * 1
+            if args.dataset == 'adult':
+                item = group_indices[idx - 1]
+                temp = (X[:, item] == 1) * 1
+            else:
+                item = group_indices[idx - 1]
+                temp = (X[:, args.group_indices] == item) * 1
         g_v.append(temp)
         num_of_data = np.sum(temp)
         num_of_positive_data = np.sum(temp * y)

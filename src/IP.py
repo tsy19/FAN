@@ -8,25 +8,24 @@ from scipy.optimize import LinearConstraint
 def IP(data, args, OptimalNet):
     X = data.X.numpy()
     y = data.y.numpy().astype(int)
-    group1_index = args.group_indices[0]
-    group2_index = args.group_indices[1]
-
     pred_labels = ((OptimalNet(data.X) >= 0.5) * 1).numpy().flatten()
-
     n = X.shape[0]
-    g2_indices = np.where(X[:, group2_index] == 1)[0]
-    g1_indices = np.where(X[:, group1_index] == 1)[0]
 
-    g1_v = (X[:, group1_index] == 1) * 1
-    g2_v = (X[:, group2_index] == 1) * 1
+    if args.dataset == "adult":
+        group1_index = args.group_indices[0]
+        group2_index = args.group_indices[1]
+        g1_v = (X[:, group1_index] == 1) * 1
+        g2_v = (X[:, group2_index] == 1) * 1
+    else:
+        group_index = args.group_indices
+        g1_v = (X[:, group_index] == 1) * 1
+        g2_v = (X[:, group_index] == 0) * 1
 
-    g1_num = g1_indices.shape[0]
-    g2_num = g2_indices.shape[0]
+    g1_num = np.sum(g1_v)
+    g2_num = np.sum(g2_v)
     total_error = pred_labels != y
-    g1_error = (pred_labels != y)[g1_indices]
-    g2_error = (pred_labels != y)[g2_indices]
-    g1_error_rate = np.sum(g1_error) / g1_num
-    g2_error_rate = np.sum(g2_error) / g2_num
+    g1_error_rate = np.sum((pred_labels != y) * g1_v) / g1_num
+    g2_error_rate = np.sum((pred_labels != y) * g2_v) / g2_num
     total_error_rate = np.sum(total_error) / n
 
     zero_vector = np.zeros_like(y)

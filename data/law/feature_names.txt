@@ -1,0 +1,11 @@
+decile1b
+decile3
+lsat
+ugpa
+zfygpa
+zgpa
+fulltime
+fam_inc
+male
+racetxt
+tier
