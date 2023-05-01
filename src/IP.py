@@ -6,12 +6,12 @@ import matplotlib.pyplot as plt
 from scipy.optimize import LinearConstraint
 
 def IP(data, args, OptimalNet):
-    X = data[0].numpy()
-    y = data[1].numpy().astype(int)
-    group1_index = args.group1_index
-    group2_index = args.group2_index
+    X = data.X.numpy()
+    y = data.y.numpy().astype(int)
+    group1_index = args.group_indices[0]
+    group2_index = args.group_indices[1]
 
-    pred_labels = ((OptimalNet(data[0]) >= 0.5) * 1).numpy().flatten()
+    pred_labels = ((OptimalNet(data.X) >= 0.5) * 1).numpy().flatten()
 
     n = X.shape[0]
     g2_indices = np.where(X[:, group2_index] == 1)[0]
@@ -51,10 +51,10 @@ def IP(data, args, OptimalNet):
         c1 = np.stack([
             np.hstack([temp1 * np.sum(temp2) - temp2 * np.sum(temp1), np.zeros(2 * n)]),
             np.hstack([temp2 * np.sum(temp1) - temp1 * np.sum(temp2), np.zeros(2 * n)])])
-        print("c1", c1.shape)
+        # print("c1", c1.shape)
         cons1 = np.array([args.epsilon * np.sum(y * g1_v) * np.sum(y * g2_v),
                           args.epsilon * np.sum(y * g1_v) * np.sum(y * g2_v)])
-        print("cons1", cons1.shape)
+        # print("cons1", cons1.shape)
 
     elif args.fairness_notion == "EOs":
         temp1 = (y * g1_v)
@@ -68,7 +68,7 @@ def IP(data, args, OptimalNet):
             np.hstack([temp3 * np.sum(temp4) - temp4 * np.sum(temp3), np.zeros(2 * n)]),
             np.hstack([temp4 * np.sum(temp3) - temp3 * np.sum(temp4), np.zeros(2 * n)])
         ])
-        print("c1", c1.shape)
+        # print("c1", c1.shape)
         cons1 = np.array(
             [
                 args.epsilon * np.sum(y * g1_v) * np.sum(y * g2_v),
@@ -77,7 +77,7 @@ def IP(data, args, OptimalNet):
                 args.epsilon * np.sum((1 - y) * g1_v) * np.sum((1 - y) * g2_v),
             ]
         )
-        print("cons1", cons1.shape)
+        # print("cons1", cons1.shape)
 
 
     c2 = np.stack(

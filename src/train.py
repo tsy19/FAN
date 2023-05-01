@@ -6,6 +6,7 @@ import numpy as np
 import os
 
 def train_model(train_data, val_data, model, args, path=""):
+    MIN_EPOCHS = args.min_epoch
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -84,8 +85,14 @@ def train_model(train_data, val_data, model, args, path=""):
         else:
             early_stop_counter += 1
             if early_stop_counter >= args.patience:
-                print('Early stopping after', i, 'epochs')
-                break
+                if i >= MIN_EPOCHS:
+                    print('Early stopping after', i, 'epochs')
+                    loss_list = np.hstack(loss_list).tolist()
+                    torch.save(model.state_dict(), os.path.join(path, "model_state.pth"))
+                    with open(os.path.join(path, 'loss.txt'), 'a') as file:
+                        for item in loss_list:
+                            file.write(str(item) + '\n')
+                    break
 
     duration = time.time() - start_time
     print('Training Time: {}'.format(duration))
