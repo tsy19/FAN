@@ -16,11 +16,11 @@ def args_parser():
                        help="Training device.")
     parser.add_argument('--lr', type=float, default=0.001,
                        help="Initial learning rate.")
-    parser.add_argument('--lr_factor', type=float, default=0.75,
+    parser.add_argument('--lr_factor', type=float, default=0.95,
                         help="new learning rate = previous learning rate * lr_factor")
-    parser.add_argument('--lr_patience', type=int, default=5,
+    parser.add_argument('--lr_patience', type=int, default=10,
                         help="if the loss not decrease after lr_patience then reduce learning rate.")
-    parser.add_argument('--sample_ratio', type=float, default=0.5,
+    parser.add_argument('--sample_ratio', type=float, default=0.1,
                         help="Sample how much data for Integer Programming.")
     parser.add_argument('--seed', type=int, default=1, help='random seed')
     parser.add_argument('--ROOT', type=str, default="./", help='Root to the directory.')

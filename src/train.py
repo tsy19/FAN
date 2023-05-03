@@ -76,6 +76,7 @@ def train_model(train_data, val_data, model, args, path=""):
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
+
         epoch_loss = epoch_loss / len(trainloader)
         print("Epoch {}, Training loss {}, Val loss {}, Val accuracy {} %".format(i, epoch_loss, val_loss, val_accuracy))
         with open(os.path.join(path, 'loss.txt'), 'a') as f:
@@ -95,7 +96,7 @@ def train_model(train_data, val_data, model, args, path=""):
                     #     for item in loss_list:
                     #         file.write(str(item) + '\n')
                     break
-
+        scheduler.step(val_loss)
     # duration = time.time() - start_time
     # print('Training Time: {}'.format(duration))
     return
