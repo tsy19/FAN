@@ -6,6 +6,8 @@ from src.models import MLP
 from src.train import train_model
 import matplotlib.pyplot as plt
 
+import random
+import json
 import pickle
 import numpy as np
 import os
@@ -89,7 +91,7 @@ def load_info(args):
     ]
     output_names = [str(item) if type(item) != str else item for item in output_names]
     args.output_path = os.path.join(
-        ROOT, "result", "TwoGroups",
+        args.ROOT, "result", "TwoGroups",
         "_".join(output_names)
     )
 
@@ -97,7 +99,7 @@ def load_info(args):
         os.makedirs(args.output_path)
 
     args.optimal_classifier_path = os.path.join(
-        ROOT, "result", "OptimalClassifier",
+        args.ROOT, "result", "OptimalClassifier",
         args.dataset
     )
 
@@ -112,8 +114,27 @@ def load_info(args):
 
     return args
 
+def set_seed(seed):
+    """
+    Set the seed for standard libraries and cuda.
+
+    Args:
+        seed: The seed number that should ber used.
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+    os.environ["PYTHONHASHSEED"] = str(seed)
+
 def plot(args):
-    with open(os.path.join(args.output_path, 'stats.pickle'), 'rb') as f:
+    def list_sub(list1, list2):
+        return [list1[i] - list2[i] for i in range(len(list1))]
+    with open(os.path.join(args.output_path, 'stats.pkl'), 'rb') as f:
         train_stats_raw = pickle.load(f)
         train_stats = pickle.load(f)
         test_stats = pickle.load(f)
@@ -166,6 +187,44 @@ def plot(args):
             ax[row,col].set_xticklabels(x_labels)
             ax[row,col].legend(loc="upper right", framealpha=0.3)
     fig.savefig(os.path.join(args.output_path, 'plot_stats.pdf'), bbox_inches='tight')
+
+
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(2 * 8, 1 * 6))
+    x_values = [0, 1, 2, 3, 4]
+    x_labels = ["Train data (Optimal)", "Test data (Optimal)", "Train data (IP)", "Train data (NN)", "Test data (NN)"]
+    data_fairness = []
+    if args.fairness_notion == "DP":
+        title = "Disparity (Demographic Parity)"
+        name = "accept_rate"
+    elif args.fairness_notion == "EO":
+        title = "Disparity (Equal Opportunity)"
+        name = "true_positive_rate"
+    for item in stats:
+        data_fairness.append( abs(item[name][0] - item[name][1] ) )
+    ax[0].bar(x_labels, data_fairness)
+    ax[0].set_xticks(x_values)
+    ax[0].set_xticklabels(x_labels, rotation=90)
+    ax[0].set_title(title)
+
+    legend = ["Train data (IP)", "Train data (NN)", "Test data (NN)"]
+    data_accuracy = [
+        list_sub( train_stats_raw["accuracy"], train_optimal_stats["accuracy"]),
+        list_sub(train_stats["accuracy"], train_optimal_stats["accuracy"]),
+        list_sub(test_stats["accuracy"], test_optimal_stats["accuracy"]),
+    ]
+    bar_width = 1 / (len(legend) + 1)
+    x_values = [0, 1, 2]
+    x_labels = ["Overall", "G1", "G2"]
+    x_pos = np.arange(len(x_labels))
+    start = x_pos - int(len(legend) / 2) * bar_width
+    for j, item in enumerate(data_accuracy):
+        ax[1].bar(start + j * bar_width, item, width=bar_width, label=legend[j])
+    ax[1].set_xticks(x_values)
+    ax[1].set_xticklabels(x_labels, rotation=90)
+    ax[1].set_title("Increase in Accuracy")
+    ax[1].legend(loc="upper right", framealpha=0.3)
+    fig.savefig(os.path.join(args.output_path, 'plot_stats_2.pdf'), bbox_inches='tight')
+
     return
 
 
@@ -184,7 +243,7 @@ def evaluate(args):
     train_optimal_stats, train_stats, train_stats_raw = get_stats(train_data, args, AbstainNet, hNet, OptimalNet=OptimalNet, wn=wn, hn=hn)
     test_optimal_stats, test_stats = get_stats(test_data, args, AbstainNet, hNet, OptimalNet=OptimalNet)
 
-    with open(os.path.join(args.output_path, 'stats.pickle'), 'wb') as f:
+    with open(os.path.join(args.output_path, 'stats.pkl'), 'wb') as f:
         pickle.dump(train_stats_raw, f)
         pickle.dump(train_stats, f)
         pickle.dump(test_stats, f)
@@ -195,12 +254,15 @@ def evaluate(args):
 
 
 if __name__ == '__main__':
-    ROOT = "./"
-
-
 
     args = args_parser()
     print(args)
+
+    ROOT = args.ROOT
+
+    torch.cuda.empty_cache()
+    set_seed(args.seed)
+
 
     args.data_path = os.path.join(
         ROOT, "data", args.dataset
@@ -208,11 +270,14 @@ if __name__ == '__main__':
 
     #load classifiers dimension
     args = load_info(args)
+    args_dict = vars(args)
+    json_str = json.dumps(args_dict)
+    with open(os.path.join(args.output_path, 'args.json'), 'w') as f:
+        f.write(json_str)
 
     if args.evaluate:
         evaluate(args)
     else:
-        start_time = time.time()
         train_data, val_data, test_data = load_data(args)
         print("successfully load data.")
 
@@ -229,9 +294,12 @@ if __name__ == '__main__':
         #integer programming
         num_data = len(train_data)
         sampled_data = sample_data(train_data, int(num_data * args.sample_ratio))
+        start_time = time.time()
         wn, hn = IP(sampled_data, args, OptimalNet)
-
-        if wn is not None:
+        IP_duration = time.time() - start_time
+        if wn is None:
+            print("Not feasible!")
+        else:
             #save hn, wn
             np.savez(os.path.join(
                 args.output_path, "IP_results.npz"
@@ -239,11 +307,27 @@ if __name__ == '__main__':
             )
             # train abstain classifier and h
             train_data_w, train_data_h, val_data_w, val_data_h = process_data(sampled_data, args, OptimalNet, True, wn, hn)
+
             AbstainNet = MLP(args.abstain_classifier_info)
             hNet = MLP(args.h_classifier_info)
+
+            start_time = time.time()
             train_model(train_data_w, val_data_w, AbstainNet, args, args.abstain_classifier_path)
+            Abstain_duration = time.time() - start_time
+            start_time = time.time()
             train_model(train_data_h, val_data_h, hNet, args, args.h_classifier_path)
+            h_duration = time.time() - start_time
+
+            running_time_dict = {
+                "Integer Programming": IP_duration,
+                "Abstain Classifier": Abstain_duration,
+                "h Classifier": h_duration,
+            }
+
+            with open(os.path.join(args.output_path, 'running_time.json'), 'w') as f:
+                json.dump(running_time_dict, f)
 
             evaluate(args)
-        duration = time.time() - start_time
-        print('Total Time: {}'.format(duration))
+            print('Running Time (Integer Programming): {}'.format(IP_duration))
+            print('Running Time (Classifier Training): {}'.format(Abstain_duration + h_duration))
+            print('Running Time (Total): {}'.format(IP_duration + Abstain_duration + h_duration))
