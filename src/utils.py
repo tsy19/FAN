@@ -32,8 +32,8 @@ def load_data(args):
 def process_data(data, args, OptimalNet, train=True, wn=None, hn=None):
     X = np.column_stack(
         (data.X.numpy(),
-         ((OptimalNet(data.X) >= 0.5) * 1).detach().cpu().numpy().flatten()
-    ))
+         (OptimalNet(data.X).detach().cpu().numpy().flatten())
+         ))
     n = X.shape[0]
     if train == True:
         truncated = int(n * args.sample_ratio)
@@ -163,12 +163,14 @@ def get_stats(data, args, AbstainNet, HNet, OptimalNet=None, wn=None, hn=None):
     data = process_data(data, args, OptimalNet, False)
     wn_predict = ((AbstainNet(data.X) >= 0.5) * 1).numpy().flatten()
     hn_predict = ((HNet(data.X) >= 0.5) * 1).numpy().flatten()
+    hn_predict[wn_predict == 0] = 0
     stats = compute_stats(data, args, wn_predict, hn_predict, star_n=star_n)
 
     if wn is not None:
         sampled_length = wn.shape[0]
         if sampled_length != y.shape[0]:
             data = sample_data(data, sampled_length)
+        hn[wn == 0] = 0
         stats_raw = compute_stats(data, args, wn, hn, star_n=star_n)
         return optimal_stats, stats, stats_raw
     else:

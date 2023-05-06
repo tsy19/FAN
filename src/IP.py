@@ -8,7 +8,8 @@ from scipy.optimize import LinearConstraint
 def IP(data, args, OptimalNet):
     X = data.X.numpy()
     y = data.y.numpy().astype(int)
-    pred_labels = ((OptimalNet(data.X) >= 0.5) * 1).numpy().flatten()
+    log_probs = OptimalNet(data.X).detach().numpy().flatten()
+    pred_labels = ( log_probs >= 0.5 ) * 1
     n = X.shape[0]
 
     if args.dataset == "adult":
@@ -88,7 +89,6 @@ def IP(data, args, OptimalNet):
     #     print("c2", c2.shape)
     cons2 = np.array([(1 - args.delta1) * g1_num, (1 - args.delta2) * g2_num])
 
-    g1_v - 2 * g1_v * y
     r1 = (g1_error_rate + args.eta1 - args.eta1 * g1_error_rate) * g1_v - g1_v * y
     r2 = (g2_error_rate + args.eta2 - args.eta2 * g2_error_rate) * g2_v - g2_v * y
     c3 = np.stack([
@@ -150,17 +150,46 @@ def IP(data, args, OptimalNet):
     interval = int(num_kn / 3)
     wn = kn[interval:2 * interval]
     hn = kn[2 * interval:]
+
+    fn = (hn != pred_labels) * 1
+    fn[wn == 0] == 1
+
+    wn, fn = adjust_IP_results(wn, fn, y, log_probs, pred_labels, [g1_v, g2_v])
+    hn = (1 - pred_labels) * fn + pred_labels * (1 - fn)
+    # k = np.hstack( (wn * hn, wn, hn ))
     return wn, hn
 
+def adjust_IP_results(wn, fn, y, log_probs, pred_labels, g_v):
+    # combine wn and fn into a single array for convenience
+    wn_fn = np.stack((wn, fn), axis=1)
 
-def process_wn(wn, pred_labels):
-    if wn is None:
-        print("Not feasible!")
-        return None
-    else:
-        plt.plot(np.sort(wn))
-        plt.title("$w_n$ for each data point")
-        plt.xlabel("data points")
-        plt.ylabel("value")
+    # iterate over each group
+    for g in g_v:
+        # iterate over each of the 4 regions within the group
+        for r in range(4):
+            # select the samples in the current region
+            y_ = r // 2
+            p_ = r % 2
+            region_mask = g * (y == y_) * (pred_labels == p_)
+            region_size = np.sum(region_mask)
 
-        return (wn * pred_labels)
+            if region_size > 0:
+                region_indices = np.where(region_mask == 1)[0]
+                # get the log probabilities and corresponding indices for the current region
+                region_log_probs = log_probs[region_indices]
+                # print(r, region_size)
+                # print("region non flip", np.sum(wn_fn[region_indices][:, 1]))
+                # sort the indices based on the log probabilities
+                sorted_indices = region_indices[np.argsort(region_log_probs)]
+                region_w_f = wn_fn[sorted_indices]
+
+                adjusted_indices = np.lexsort((-region_w_f[:, 1], region_w_f[:, 0]))
+                adjusted_region_w_f = region_w_f[adjusted_indices]
+                wn_fn[sorted_indices] = adjusted_region_w_f
+                # print("region non flip_remain", np.sum(wn_fn[region_indices][:, 1]))
+
+    # split wn_fn back into wn and fn arrays
+    wn, fn = wn_fn[:, 0], wn_fn[:, 1]
+    return wn, fn
+
+

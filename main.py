@@ -5,6 +5,7 @@ from src.utils import load_data, load_model, process_data, sample_data, get_stat
 from src.models import MLP
 from src.train import train_model
 import matplotlib.pyplot as plt
+import shutil
 
 import random
 import json
@@ -250,7 +251,7 @@ def evaluate(args):
         pickle.dump(train_optimal_stats, f)
         pickle.dump(test_optimal_stats, f)
 
-    plot(args)
+    # plot(args)
 
 
 if __name__ == '__main__':
@@ -331,3 +332,9 @@ if __name__ == '__main__':
             print('Running Time (Integer Programming): {}'.format(IP_duration))
             print('Running Time (Classifier Training): {}'.format(Abstain_duration + h_duration))
             print('Running Time (Total): {}'.format(IP_duration + Abstain_duration + h_duration))
+
+            if os.path.exists(os.path.join(args.output_path, "AbstainClassifier")):
+                shutil.rmtree(os.path.join(args.output_path, "AbstainClassifier"))
+
+            if os.path.exists(os.path.join(args.output_path, "hClassifier")):
+                shutil.rmtree(os.path.join(args.output_path, "hClassifier"))
