@@ -36,7 +36,7 @@ def process_data(data, args, OptimalNet, train=True, wn=None, hn=None):
          ))
     n = X.shape[0]
     if train == True:
-        truncated = int(n * args.sample_ratio)
+        truncated = int(n * 0.8)
         X_train = X[:truncated]
         wn_train = wn[:truncated]
         hn_train = hn[:truncated]
@@ -71,7 +71,7 @@ def compute_stats(data, args, wn, hn, star_n=None):
     y = data.y.numpy()
 
     un = wn * hn
-    group_indices = args.group_indices if args.dataset == "adult" else [1, 0]
+    group_indices = args.group_indices
     g_v = []
     stats = {
         "num_of_group": len(group_indices),
@@ -103,12 +103,8 @@ def compute_stats(data, args, wn, hn, star_n=None):
         if idx == 0:
             temp = np.ones(y.shape[0])
         else:
-            if args.dataset == 'adult':
-                item = group_indices[idx - 1]
-                temp = (X[:, item] == 1) * 1
-            else:
-                item = group_indices[idx - 1]
-                temp = (X[:, args.group_indices] == item) * 1
+            item = group_indices[idx - 1]
+            temp = (X[:, item] == 1) * 1
         g_v.append(temp)
         num_of_data = np.sum(temp)
         num_of_positive_data = np.sum(temp * y)

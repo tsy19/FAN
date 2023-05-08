@@ -12,15 +12,10 @@ def IP(data, args, OptimalNet):
     pred_labels = ( log_probs >= 0.5 ) * 1
     n = X.shape[0]
 
-    if args.dataset == "adult":
-        group1_index = args.group_indices[0]
-        group2_index = args.group_indices[1]
-        g1_v = (X[:, group1_index] == 1) * 1
-        g2_v = (X[:, group2_index] == 1) * 1
-    else:
-        group_index = args.group_indices
-        g1_v = (X[:, group_index] == 1) * 1
-        g2_v = (X[:, group_index] == 0) * 1
+    group1_index = args.group_indices[0]
+    group2_index = args.group_indices[1]
+    g1_v = (X[:, group1_index] == 1) * 1
+    g2_v = (X[:, group2_index] == 1) * 1
 
     g1_num = np.sum(g1_v)
     g2_num = np.sum(g2_v)

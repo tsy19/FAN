@@ -17,7 +17,7 @@ from src.options import args_parser
 from src.IP import IP
 
 def load_info(args):
-    if args.dataset == "adult":
+    if "adult" in args.dataset:
         input_dim = 108
         args.optimal_classifier_info = {
             "dims": [input_dim, 300, 300],
@@ -34,26 +34,61 @@ def load_info(args):
         if args.attribute == "sex":
             args.group_indices = [65, 64]
 
+    if "adultrace" in args.dataset:
+        input_dim = 105
+        args.optimal_classifier_info = {
+            "dims": [input_dim, 300, 300],
+            "dropout": 0.5
+        }
+        args.abstain_classifier_info = {
+            "dims": [input_dim + 1, 300, 300],
+            "dropout": 0.5
+        }
+        args.h_classifier_info = {
+            "dims": [input_dim + 1, 300, 300],
+            "dropout": 0.5
+        }
+        args.group_indices = [60, 59]
+
     if args.dataset == "compas":
-        input_dim = 7
+        input_dim = 19
         args.optimal_classifier_info = {
-            "dims": [input_dim, 150, 150],
+            "dims": [input_dim, 100, 100],
             "dropout": 0.5
         }
         args.abstain_classifier_info = {
-            "dims": [input_dim + 1, 150, 150],
+            "dims": [input_dim + 1, 100, 100],
             "dropout": 0.5
         }
         args.h_classifier_info = {
-            "dims": [input_dim + 1, 150, 150],
+            "dims": [input_dim + 1, 100, 100],
             "dropout": 0.5
         }
         if args.attribute == "race":
-            args.group_indices = 3
+            args.group_indices = [7, 8]
         elif args.attribute == "sex":
-            args.group_indices = 4
+            args.group_indices = [5, 6]
     if args.dataset == "law":
-        input_dim = 11
+        input_dim = 14
+        args.optimal_classifier_info = {
+            "dims": [input_dim, 100, 100],
+            "dropout": 0.5
+        }
+        args.abstain_classifier_info = {
+            "dims": [input_dim + 1, 100, 100],
+            "dropout": 0.5
+        }
+        args.h_classifier_info = {
+            "dims": [input_dim + 1, 100, 100],
+            "dropout": 0.5
+        }
+        if args.attribute == "race":
+            args.group_indices = [11, 10]
+        elif args.attribute == "sex":
+            args.group_indices = [12, 13]
+
+    if args.dataset == "german":
+        input_dim = 56
         args.optimal_classifier_info = {
             "dims": [input_dim, 150, 150],
             "dropout": 0.5
@@ -66,8 +101,23 @@ def load_info(args):
             "dims": [input_dim + 1, 150, 150],
             "dropout": 0.5
         }
-        if args.attribute == "race":
-            args.group_indices = 9
+        args.group_indices = [10, 11]
+
+    if args.dataset == "compashighbias":
+        input_dim = 23
+        args.optimal_classifier_info = {
+            "dims": [input_dim, 100, 100],
+            "dropout": 0.5
+        }
+        args.abstain_classifier_info = {
+            "dims": [input_dim + 1, 100, 100],
+            "dropout": 0.5
+        }
+        args.h_classifier_info = {
+            "dims": [input_dim + 1, 100, 100],
+            "dropout": 0.5
+        }
+        args.group_indices = [21, 22]
 
 
     output_names = [
@@ -251,7 +301,7 @@ def evaluate(args):
         pickle.dump(train_optimal_stats, f)
         pickle.dump(test_optimal_stats, f)
 
-    # plot(args)
+    plot(args)
 
 
 if __name__ == '__main__':

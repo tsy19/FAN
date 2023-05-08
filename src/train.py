@@ -44,7 +44,7 @@ def train_model(train_data, val_data, model, args, path=""):
     best_loss = float('inf')
     loss_list = []
     for i in range(args.max_epoch):
-        if i % 50 == 0 and i != 0:
+        if i % 10 == 0 and i != 0:
             # loss_list = np.hstack(loss_list).tolist()
             torch.save(model.state_dict(), os.path.join(path, "model_state.pth"))
             # with open(os.path.join(path, 'loss.txt'), 'a') as file:

@@ -20,19 +20,19 @@ def args_parser():
                         help="new learning rate = previous learning rate * lr_factor")
     parser.add_argument('--lr_patience', type=int, default=10,
                         help="if the loss not decrease after lr_patience then reduce learning rate.")
-    parser.add_argument('--sample_ratio', type=float, default=0.5,
+    parser.add_argument('--sample_ratio', type=float, default=1,
                         help="Sample how much data for Integer Programming.")
     parser.add_argument('--seed', type=int, default=1, help='random seed')
     parser.add_argument('--ROOT', type=str, default="./", help='Root to the directory.')
 
 
-    parser.add_argument('--dataset', type=str, default="adult",
+    parser.add_argument('--dataset', type=str, default="compashighbias",
                         help="Dataset. Select from adult, law, compas")
-    parser.add_argument('--attribute', type=str, default="sex",
+    parser.add_argument('--attribute', type=str, default="race",
                         help="Sensitive attribute to protect. For adult, default is sex.")
-    parser.add_argument('--fairness_notion', type=str, default="DP",
+    parser.add_argument('--fairness_notion', type=str, default="EO",
                         help="Fairness notion to use. Default is DP. Choose from DP, EO, EOs.")
-    parser.add_argument('--epsilon', type=float, default=0.2,
+    parser.add_argument('--epsilon', type=float, default=0.005,
                         help="A fairness measurement. Disparity of the two groups.")
     parser.add_argument('--delta1', type=float, default=0.3,
                         help="Abstention rate allowed of group1")
