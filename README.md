@@ -1,4 +1,4 @@
-# Fair Classifier that Abstain
+# Fair Classifiers that Abstain without Harm (FAN)
 
 Code of the paper [Fair Classifiers that Abstain without Harm](https://arxiv.org/abs/2310.06205)
 
