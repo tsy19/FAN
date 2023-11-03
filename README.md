@@ -1,5 +1,7 @@
 # Fair Classifier that Abstain
 
+Code of the paper [``Fair Classifiers that Abstain without Harm''](https://arxiv.org/abs/2310.06205)
+
 An example to run the code:
 
 ```
