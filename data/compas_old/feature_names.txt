@@ -1,7 +1,0 @@
-age_cat_25 - 45
-age_cat_Greater than 45
-age_cat_Less than 25
-race
-sex
-priors_count
-c_charge_degree
